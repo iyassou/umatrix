@@ -1,8 +1,8 @@
-# `umatrix` - A matrix library for Micropython
+# `umatrix` - A matrix library for MicroPython
 
 ## Features
 
-`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in Micropython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
+`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in MicroPython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
 
 ## Examples
 
