@@ -100,7 +100,7 @@ matrix( [ -0.1767956,     0.2447514,    -0.09392265],
 ```
 
 ### Rounding a matrix.
-Note that calling `round` on a matrix will not work as Micropython has not implemented the `__round__` magic method, so rounding a matrix requires you call its defined `round` method with the accustomed decimal places argument. The `round` method supports `complex` coefficients. An optional boolean argument `inplace` set to `False` by default makes the changes "in place" when set to `True`.
+Note that calling `round` on a matrix will not work as Micropython has not implemented the `__round__` magic method, so rounding a matrix requires you call its defined `round` method with the accustomed decimal places argument. The `round` method supports `complex` coefficients. A boolean argument `inplace` set to `False` by default makes the changes "in place" when set to `True`.
 ```
 >>> (M*M.inverse).round(5)
 matrix( [ 1.0,   0.0,   -0.0],
