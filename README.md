@@ -4,7 +4,7 @@
 
 `umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in Micropython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
 
-`umatrix` comes in two flavours, original and `np`. `umatrix_np` supports `numpy`-like matrix slicing and the method `shape`, `umatrix` does not and calls `shape` `size`.
+`umatrix` comes in two flavours, original and `np`. `umatrix_np` supports `numpy`-like matrix slicing and the `shape` method, `umatrix` does not and calls `shape` `size`.
 
 Running on a microcontroller incurs performance penalties for larger MicroPython scripts, and although the performance and file size delta between the two flavours is relatively minimal (about 1.5 kB and fractions of milliseconds), I chose to separate them for those who favour a slight performance edge over matrix slicing.
 
