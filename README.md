@@ -1,8 +1,14 @@
-# `umatrix` - A matrix library for MicroPython
+# `umatrix` - A matrix library for Micropython
 
 ## Features
 
-`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in MicroPython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
+`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in Micropython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
+
+`umatrix` comes in two flavours, original and `np`. `umatrix_np` supports `numpy`-like matrix slicing and the method `shape`, `umatrix` does not and calls `shape` `size`.
+
+Running on a microcontroller incurs performance penalties for larger MicroPython scripts, and although the performance and file size delta between the two flavours is relatively minimal (about 1.5 kB and fractions of milliseconds), I chose to separate them for those who favour a slight performance edge over matrix slicing.
+
+Note that a flavour gets updated when a fine-tuning opportunity that speeds it up is seen unless stated otherwise.
 
 ## Examples
 
@@ -11,9 +17,9 @@
 >>> from umatrix import *
 >>> A = matrix([1, 2, 3], [4, 5, 6], [7, 8, 9])
 >>> A
-matrix( [1,	2,	3],
-	[4,	5,	6],
-	[7,	8,	9] )
+matrix( [1,     2,      3],
+        [4,     5,      6],
+        [7,     8,      9] )
 >>> M = matrix([12, 23, 31], [40, 50, 60], [71, 87, 98])
 >>> print(M)
 [12,    23,     31,
@@ -75,6 +81,7 @@ matrix( [ 24,    46,     62],
 ```
 
 ### Determinant / `det`
+Supports <= 4x4 matrices.
 ```
 >>> A.det
 0
@@ -100,7 +107,7 @@ matrix( [ -0.1767956,     0.2447514,    -0.09392265],
 ```
 
 ### Rounding a matrix.
-Note that calling `round` on a matrix will not work as Micropython has not implemented the `__round__` magic method, so rounding a matrix requires you call its defined `round` method with the accustomed decimal places argument. The `round` method supports `complex` coefficients. A boolean argument `inplace` set to `False` by default makes the changes "in place" when set to `True`.
+Note that calling `round` on a matrix will not work as Micropython has not implemented the `__round__` magic method, so rounding a matrix requires you call its defined `round` method with the accustomed decimal places argument. The `round` method supports `complex` coefficients. The boolean argument `inplace` set to `False` by default makes the changes "in place" when set to `True`.
 ```
 >>> (M*M.inverse).round(5)
 matrix( [ 1.0,   0.0,   -0.0],
@@ -219,6 +226,83 @@ matrix( [0,     0,      0],
         [7,     8,      9] )
 ```
 
+### `umatrix_np` exclusives
+
+- `numpy`-like matrix slicing
+
+Referencing a matrix with a `tuple` of either two `slice`s or a `slice` and an `int` returns a new matrix.
+You can also modify matrix coefficients by assigning values to a matrix `slice`.
+Note that for changing the value of a specific coefficient, you should use `matrix[idx1][idx2] = new_val` and not a `slice` assignment.
+```
+>>> Z = matrix([1,2,3,4],[5,6,7,8],[8,9,0,1],[2,3,4,5],[6,7,8,9])
+>>> Z
+matrix( [1,     2,      3,      4],
+        [5,     6,      7,      8],
+        [8,     9,      0,      1],
+        [2,     3,      4,      5],
+        [6,     7,      8,      9] )
+>>> Z[:, 3]
+matrix( [4],
+        [8],
+        [1],
+        [5],
+        [9] )
+>>> Z[0, ::2]
+matrix( [1,     3] )
+>>> Z[1:4, 1:]
+matrix( [6,     7,      8],
+        [9,     0,      1],
+        [3,     4,      5] )
+>>> Z[::2, 2]
+matrix( [3],
+        [0],
+        [8] )
+>>> Z[::2, 2] = 1111, 1111, 1111
+>>> Z
+matrix( [   1,     2,   1111,      4],
+        [   5,     6,      7,      8],
+        [   8,     9,   1111,      1],
+        [   2,     3,      4,      5],
+        [   6,     7,   1111,      9] )
+>>> Z[:, 2:]
+matrix( [1111,     4],
+        [   7,     8],
+        [1111,     1],
+        [   4,     5],
+        [1111,     9] )
+>>> Z[:, 2:] = [[0]*2]*5
+>>> Z
+matrix( [1,     2,      0,      0],
+        [5,     6,      0,      0],
+        [8,     9,      0,      0],
+        [2,     3,      0,      0],
+        [6,     7,      0,      0] )
+>>> Z[1, ::2]
+matrix( [5,     0] )
+>>> Z[1, ::2] = [5555, 5555]
+>>> Z
+matrix( [   1,     2,      0,      0],
+        [5555,     6,   5555,      0],
+        [   8,     9,      0,      0],
+        [   2,     3,      0,      0],
+        [   6,     7,      0,      0] )
+>>> Z[4][1] = 9999
+>>> Z
+matrix( [   1,     2,      0,      0],
+        [5555,     6,   5555,      0],
+        [   8,     9,      0,      0],
+        [   2,     3,      0,      0],
+        [   6,  9999,      0,      0] )
+```
+
+- `shape` method
+```
+>>> Z.size
+(5, 4)
+>>> Z.shape
+(5, 4)
+```
+
 ## Useful functions: `eye`, `fill`, `zeros`, `ones`
 
 Note that for `fill`, `zeros`, and `ones`, if the number of columns is not supplied as a final argument a square matrix is returned.
@@ -268,11 +352,12 @@ matrix( [1,     1,      1,      1,      1],
 
 ### Environment
 
-For both the Pyboard v1.1 and Pyboard v1.0 lite tests, no SD card was used. There were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py`, and `umatrix.py`.
+For both the Pyboard v1.1 and Pyboard v1.0 lite tests, no SD card was used.
+For each flavour's test, there were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py` (as described above), and `umatrix.py` or `umatrix_np.py`.
 
 `main.py` consisted of the following lines:
 ```
-from umatrix import *
+from [CORRESPONDING LIBRARY] import *
 from utime import ticks_us
 
 def t(func, n):
@@ -336,19 +421,42 @@ A reminder that the results are in milliseconds.
 
 #### Pyboard v1.1
 
+- `umatrix` `v1.1`
+
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
-| 2x2         | 0.6848606          | 0.7325056          |
-| 3x3         | 1.098049           | 1.593377           |
-| 4x4         | 1.781636           | 4.598035           |
+| 2x2         | 0.6389978          | 0.6757866          |
+| 3x3         | 0.986433           | 1.482017           |
+| 4x4         | 1.590575           | 4.407331           |
+
+- `umatrix_np` `v1.0`
+
+| Matrix Size | Small Coefficients | Large Coefficients |
+|:-----------:|:------------------:|:------------------:|
+| 2x2         | 0.6740602          | 0.7213964          |
+| 3x3         | 1.072958           | 1.573              |
+| 4x4         | 1.734226           | 4.559215           |
+
+
 
 #### Pyboard v1.0 lite
 
+- `umatrix` `v1.1`
+
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
-| 2x2         | 1.152287           | 1.232876           |
-| 3x3         | 1.866398           | 2.701198           |
-| 4x4         | 3.046224           | 7.754453           |
+| 2x2         | 1.059002           | 1.139208           |
+| 3x3         | 1.678305           | 2.513484           |
+| 4x4         | 2.726529           | 7.431259           |
 
+- `umatrix_np` `v1.0`
+
+| Matrix Size | Small Coefficients | Large Coefficients |
+|:-----------:|:------------------:|:------------------:|
+| 2x2         | 1.137326           | 1.217149           |
+| 3x3         | 1.831495           | 2.671786           |
+| 4x4         | 2.979418           | 7.701244           |
 
 There is a clear increase in execution time for either tests as the matrix size and coefficients get larger.
+
+The performance difference between the two flavours is present, but negligeable depending on your application's mercy.
