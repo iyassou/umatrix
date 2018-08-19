@@ -1,4 +1,4 @@
-# `umatrix` - A matrix library for Micropython
+# `umatrix` - A matrix library for MicroPython
 
 ## Features
 
