@@ -421,7 +421,7 @@ A reminder that the results are in milliseconds.
 
 #### Pyboard v1.1
 
-- `umatrix` `v1.1`
+> - `umatrix` `v1.1`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
@@ -429,7 +429,7 @@ A reminder that the results are in milliseconds.
 | 3x3         | 0.986433           | 1.482017           |
 | 4x4         | 1.590575           | 4.407331           |
 
-- `umatrix_np` `v1.0`
+> - `umatrix_np` `v1.0`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
@@ -441,7 +441,7 @@ A reminder that the results are in milliseconds.
 
 #### Pyboard v1.0 lite
 
-- `umatrix` `v1.1`
+> - `umatrix` `v1.1`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
@@ -449,7 +449,7 @@ A reminder that the results are in milliseconds.
 | 3x3         | 1.678305           | 2.513484           |
 | 4x4         | 2.726529           | 7.431259           |
 
-- `umatrix_np` `v1.0`
+> - `umatrix_np` `v1.0`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
