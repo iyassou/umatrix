@@ -1,5 +1,7 @@
 __version__ = "1.1"
 
+from math import floor
+
 eye = lambda order: matrix(*[[int(i==j) for j in range(order)] for i in range(order)])
 fill = lambda x, order, num_cols=None: matrix(*[[x]*(num_cols if num_cols is not None else order)]*order)
 zeros = lambda order, num_cols=None: fill(0, order, num_cols)
@@ -43,6 +45,9 @@ class matrix:
 	@property
 	def size(self):
 		return len(self.rows), len(self.rows[0])
+	@property
+	def shape(self):
+		return self.size
 	def apply(self, func, inplace=False):
 		assert callable(func), "First argument must be a callable function with an int, float, or complex return."
 		rows = self.rows
@@ -50,7 +55,7 @@ class matrix:
 			return matrix(*[[func(rows[i][j]) for j in range(len(rows[0]))] for i in range(len(rows))])
 		for i in range(len(rows)):
 			for j in range(len(rows[0])):
-				self.rows[i][j] = func(rows[i][j])
+				self.rows[i][j] = func(self.rows[i][j])
 	def copy(self):
 		return matrix(*[[self.rows[i][j] for j in range(len(self.rows[0]))] for i in range(len(self.rows))])
 	def round(self, places=0, inplace=False):
@@ -82,7 +87,7 @@ class matrix:
 		rows = self.rows
 		size = len(rows), len(rows[0])
 		assert size == other.size
-		return matrix(*[[rows[i][j]+other[i][j] for j in range(size[1])] for i in range(size[0])])
+		return matrix(*[[rows[i][j]+other.rows[i][j] for j in range(size[1])] for i in range(size[0])])
 	def __radd__(self, other):
 		return self.__add__(other)
 	def __iadd__(self, other):
@@ -93,7 +98,7 @@ class matrix:
 		rows = self.rows
 		size = len(rows), len(rows[0])
 		assert size == other.size
-		return matrix(*[[rows[i][j]-other[i][j] for j in range(size[1])] for i in range(size[0])])
+		return matrix(*[[rows[i][j]-other.rows[i][j] for j in range(size[1])] for i in range(size[0])])
 	def __rsub__(self, other):
 		return other.__sub__(self)
 	def __isub__(self, other):
@@ -123,12 +128,50 @@ class matrix:
 		return result
 	def __abs__(self):
 		return self.det
-	def __getitem__(self, row_num):
-		return self.rows[row_num]
-	def __setitem__(self, row_num, replacement):
-		assert len(replacement) == len(self.rows[0]), "Replacement has length {}, should be {}.".format(len(replacement), len(self.rows[0]))
-		assert all([isinstance(x, int) or isinstance(x, float) or isinstance(x, complex) for x in replacement]), "Not all entries are of type int, float, or complex."
-		self.rows[row_num] = replacement
+	def __getitem__(self, *args):
+		if isinstance(args[0], tuple):
+			a00, a01, rows = args[0][0], args[0][1], self.rows
+			if isinstance(a00, slice):
+				if isinstance(a01, slice):
+					return matrix(*[row[a01] for row in rows[a00]])
+				return matrix(*[[row[a01]] for row in rows[a00]])
+			elif isinstance(a01, slice):
+				return matrix(*[row[a01] for row in [rows[a00]]])
+			return matrix(*[[row[a00]] for row in [rows[a01]]])
+		return self.rows[args[0]]
+	def __setitem__(self, *args):
+		sub = args[1]
+		if isinstance(a0, tuple):
+			from math import floor
+			norm_slice = lambda s, rows: (s.start if s.start is not None else 0, s.stop if s.stop is not None else (len(self.rows) if rows else len(self.rows[0])), s.step if s.step is not None else 1)
+			a00, a01 = args[0]
+			a00_slice, a01_slice = [isinstance(x, slice) for x in [a00, a01]]
+			if a00_slice:
+				a00_iter = norm_slice(a00, True)
+			if a01_slice:
+				a01_iter = norm_slice(a01, False)
+			if a00_slice:
+				if a01_slice:
+					assert all([len(s) == floor((a01_iter[1]-a01_iter[0])/a01_iter[2]) for s in sub])
+					assert all([typecheck(x) for y in sub for x in y])
+					for i in range(*a00_iter):
+						for j in range(*a01_iter):
+							self.rows[i][j] = sub[(i//a00_iter[2])-a00_iter[0]][(j//a01_iter[2])-a01_iter[0]]
+				else:
+					assert len(sub) == (a00_iter[1]-a00_iter[0]+1)//a00_iter[2]
+					assert all([typecheck(x) for x in sub])
+					for i in range(*a00_iter):
+						self.rows[i][a01] = sub[(i-a00_iter[0])//a00_iter[2]]
+			elif a01_slice:
+				assert len(sub) == (a01_iter[1]-a01_iter[0]+1)//a01_iter[2]
+				assert all([typecheck(x) for x in sub])
+				for j in range(*a01_iter):
+					self.rows[a00][j] = sub[(j-a01_iter[0])//a01_iter[2]]
+		else:
+			check = len(self.rows) - args[0].start*isinstance(args[0], slice)
+			assert len(sub) == check, "Replacement has length {}, should be {}".format(len(sub), check)
+			assert all([typecheck(x) for y in sub for x in y])
+			self.rows[args[0]] = sub
 	@property
 	def order(self):
 		return len(self.rows)
