@@ -426,5 +426,3 @@ A reminder that the results are in milliseconds.
 | 4x4         | 2.979418           | 7.701244           |
 
 There is a clear increase in execution time for either tests as the matrix size and coefficients get larger.
-
-The performance difference between the two flavours is present, but negligeable depending on your application's mercy.
