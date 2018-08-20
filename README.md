@@ -2,13 +2,7 @@
 
 ## Features
 
-`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in Micropython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients.
-
-`umatrix` comes in two flavours, original and `np`. `umatrix_np` supports `numpy`-like matrix slicing and the `shape` method, `umatrix` does not and calls `shape` `size`.
-
-Running on a microcontroller incurs performance penalties for larger MicroPython scripts, and although the performance and file size delta between the two flavours is relatively minimal (about 1.5 kB and fractions of milliseconds), I chose to separate them for those who favour a slight performance edge over matrix slicing.
-
-Note that a flavour gets updated when a fine-tuning opportunity that speeds it up is seen unless stated otherwise.
+`umatrix` was written mainly with speed and ease-of-use in mind. It aims to be a simple solution to matrix arithmetic needs in Micropython. It implements basic matrix operations (addition, subtraction, multiplication) as well as determinant (shortened to `det`), `inverse`, `trace`, `transpose`, `copy`, and other functions. The matrix class supports `int`, `float`, and `complex` coefficients, as well as `numpy`-like matrix slicing.
 
 ## Examples
 
@@ -226,9 +220,7 @@ matrix( [0,     0,      0],
         [7,     8,      9] )
 ```
 
-### `umatrix_np` exclusives
-
-- `numpy`-like matrix slicing
+### `numpy`-like matrix slicing
 
 Referencing a matrix with a `tuple` of either two `slice`s or a `slice` and an `int` returns a new matrix.
 You can also modify matrix coefficients by assigning values to a matrix `slice`.
@@ -295,14 +287,6 @@ matrix( [   1,     2,      0,      0],
         [   6,  9999,      0,      0] )
 ```
 
-- `shape` method
-```
->>> Z.size
-(5, 4)
->>> Z.shape
-(5, 4)
-```
-
 ## Useful functions: `eye`, `fill`, `zeros`, `ones`
 
 Note that for `fill`, `zeros`, and `ones`, if the number of columns is not supplied as a final argument a square matrix is returned.
@@ -353,11 +337,11 @@ matrix( [1,     1,      1,      1,      1],
 ### Environment
 
 For both the Pyboard v1.1 and Pyboard v1.0 lite tests, no SD card was used.
-For each flavour's test, there were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py` (as described above), and `umatrix.py` or `umatrix_np.py`.
+For each flavour's test, there were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py` (as described above), and `umatrix.py`.
 
 `main.py` consisted of the following lines:
 ```
-from [CORRESPONDING LIBRARY] import *
+from umatrix import *
 from utime import ticks_us
 
 def t(func, n):
@@ -421,15 +405,7 @@ A reminder that the results are in milliseconds.
 
 #### Pyboard v1.1
 
-> - `umatrix` `v1.1`
-
-| Matrix Size | Small Coefficients | Large Coefficients |
-|:-----------:|:------------------:|:------------------:|
-| 2x2         | 0.6389978          | 0.6757866          |
-| 3x3         | 0.986433           | 1.482017           |
-| 4x4         | 1.590575           | 4.407331           |
-
-> - `umatrix_np` `v1.0`
+- `umatrix` `v1.1`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
@@ -441,15 +417,7 @@ A reminder that the results are in milliseconds.
 
 #### Pyboard v1.0 lite
 
-> - `umatrix` `v1.1`
-
-| Matrix Size | Small Coefficients | Large Coefficients |
-|:-----------:|:------------------:|:------------------:|
-| 2x2         | 1.059002           | 1.139208           |
-| 3x3         | 1.678305           | 2.513484           |
-| 4x4         | 2.726529           | 7.431259           |
-
-> - `umatrix_np` `v1.0`
+- `umatrix` `v1.1`
 
 | Matrix Size | Small Coefficients | Large Coefficients |
 |:-----------:|:------------------:|:------------------:|
