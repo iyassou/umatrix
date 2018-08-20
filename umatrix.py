@@ -18,36 +18,33 @@ class matrix:
 		self.rows = list(content) if are_rows else [[col[i] for col in content] for i in range(len(content[0]))]
 	def __repr__(self):
 		rows = self.rows
-		size = len(rows), len(rows[0])
-		pretty_print = max([len(str(x)) for y in rows for x in y]) if size[0] > 1 else 1
+		shape = len(rows), len(rows[0])
+		pretty_print = max([len(str(x)) for y in rows for x in y]) if shape[0] > 1 else 1
 		r = "matrix( "
-		for i in range(size[0]):
+		for i in range(shape[0]):
 			r += "["
-			for j in range(size[1]):
-				r += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=size[1]-1)
-			r += "],\n\t" if i != size[0]-1 else "]"
+			for j in range(shape[1]):
+				r += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=shape[1]-1)
+			r += "],\n\t" if i != shape[0]-1 else "]"
 		return r + " )"
 	def __str__(self):
 		rows = self.rows
-		size = len(rows), len(rows[0])
-		pretty_print = max([len(str(x)) for y in rows for x in y]) if size[0] > 1 else 1
+		shape = len(rows), len(rows[0])
+		pretty_print = max([len(str(x)) for y in rows for x in y]) if shape[0] > 1 else 1
 		s = "["
-		for i in range(size[0]):
+		for i in range(shape[0]):
 			if i:
 				s += " "
-			for j in range(size[1]):
-				s += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=size[1]-1)
-			s += ",\n" if i != size[0]-1 else "]"
+			for j in range(shape[1]):
+				s += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=shape[1]-1)
+			s += ",\n" if i != shape[0]-1 else "]"
 		return s
 	@property
 	def cols(self):
 		return [[row[i] for row in self.rows] for i in range(len(self.rows[0]))]
 	@property
-	def size(self):
-		return len(self.rows), len(self.rows[0])
-	@property
 	def shape(self):
-		return self.size
+		return len(self.rows), len(self.rows[0])
 	def apply(self, func, inplace=False):
 		assert callable(func), "First argument must be a callable function with an int, float, or complex return."
 		rows = self.rows
@@ -68,10 +65,10 @@ class matrix:
 	def __eq__(self, other):
 		assert isinstance(other, matrix), "Cannot compare matrix and {}.".format(type(other))
 		rows = self.rows
-		size = len(rows), len(rows[0])
-		if size == other.size:
-			for i in range(size[0]):
-				for j in range(size[1]):
+		shape = len(rows), len(rows[0])
+		if shape == other.shape:
+			for i in range(shape[0]):
+				for j in range(shape[1]):
 					if rows[i][j] != other.rows[i][j]:
 						return False
 			return True
@@ -85,9 +82,9 @@ class matrix:
 	def __add__(self, other):
 		assert isinstance(other, matrix), "Cannot add matrix and {}.".format(type(other))
 		rows = self.rows
-		size = len(rows), len(rows[0])
-		assert size == other.size
-		return matrix(*[[rows[i][j]+other.rows[i][j] for j in range(size[1])] for i in range(size[0])])
+		shape = len(rows), len(rows[0])
+		assert shape == other.shape
+		return matrix(*[[rows[i][j]+other.rows[i][j] for j in range(shape[1])] for i in range(shape[0])])
 	def __radd__(self, other):
 		return self.__add__(other)
 	def __iadd__(self, other):
@@ -96,9 +93,9 @@ class matrix:
 	def __sub__(self, other):
 		assert isinstance(other, matrix), "Cannot subtract {} from matrix.".format(type(other))
 		rows = self.rows
-		size = len(rows), len(rows[0])
-		assert size == other.size
-		return matrix(*[[rows[i][j]-other.rows[i][j] for j in range(size[1])] for i in range(size[0])])
+		shape = len(rows), len(rows[0])
+		assert shape == other.shape
+		return matrix(*[[rows[i][j]-other.rows[i][j] for j in range(shape[1])] for i in range(shape[0])])
 	def __rsub__(self, other):
 		return other.__sub__(self)
 	def __isub__(self, other):
@@ -108,7 +105,7 @@ class matrix:
 		assert isinstance(other, matrix) or typecheck(other), "Cannot multiply matrix and {}.".format(type(other))
 		rows = self.rows
 		if isinstance(other, matrix):
-			assert len(rows[0]) == len(other.rows), "Incompatible matrix sizes {} and {}.".format(size, other.size)
+			assert len(rows[0]) == len(other.rows), "Incompatible matrix sizes {} and {}.".format(shape, other.shape)
 			return matrix(*[[sum([k for k in map(lambda x,y: x*y, row, col)]) for col in other.cols] for row in rows])
 		return matrix(*[[rows[i][j]*other for j in range(len(rows[0]))] for i in range(len(rows))])
 	def __rmul__(self, other):
@@ -240,7 +237,7 @@ class matrix:
 	def is_eigenvector(self, vector, value):
 		assert isinstance(vector, tuple) or isinstance(vector, list) or isinstance(vector, matrix)
 		if isinstance(vector, matrix):
-			assert vector.size == (len(self.rows), 1)
+			assert vector.shape == (len(self.rows), 1)
 		else:
 			assert len(vector) == len(self.rows)
 			vector = matrix(vector, are_rows=False)
