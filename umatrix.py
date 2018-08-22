@@ -1,4 +1,4 @@
-__version__ = "1.1"
+__version__ = "1.1.1"
 
 from math import floor
 
@@ -52,7 +52,7 @@ class matrix:
 			return matrix(*[[func(rows[i][j]) for j in range(len(rows[0]))] for i in range(len(rows))])
 		for i in range(len(rows)):
 			for j in range(len(rows[0])):
-				self.rows[i][j] = func(self.rows[i][j])
+				self.rows[i][j] = func(rows[i][j])
 	def copy(self):
 		return matrix(*[[self.rows[i][j] for j in range(len(self.rows[0]))] for i in range(len(self.rows))])
 	def round(self, places=0, inplace=False):
@@ -138,7 +138,7 @@ class matrix:
 		return self.rows[args[0]]
 	def __setitem__(self, *args):
 		sub = args[1]
-		if isinstance(a0, tuple):
+		if isinstance(args[0], tuple):
 			from math import floor
 			norm_slice = lambda s, rows: (s.start if s.start is not None else 0, s.stop if s.stop is not None else (len(self.rows) if rows else len(self.rows[0])), s.step if s.step is not None else 1)
 			a00, a01 = args[0]
@@ -165,9 +165,9 @@ class matrix:
 				for j in range(*a01_iter):
 					self.rows[a00][j] = sub[(j-a01_iter[0])//a01_iter[2]]
 		else:
-			check = len(self.rows) - args[0].start*isinstance(args[0], slice)
+			check = len(self.rows) - (args[0].start if isinstance(args[0], slice) else 0)
 			assert len(sub) == check, "Replacement has length {}, should be {}".format(len(sub), check)
-			assert all([typecheck(x) for y in sub for x in y])
+			assert all([typecheck(x) for y in sub for x in y] if isinstance(args[0], slice) else [typecheck(x) for x in sub])
 			self.rows[args[0]] = sub
 	@property
 	def order(self):
