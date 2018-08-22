@@ -34,7 +34,7 @@ matrix( [   12.516j],
 True
 >>> N.is_square
 False
->>> N.size
+>>> N.shape
 (3, 1)
 >>> N.rows
 [[12.516j], [6.345], [(7+0.171j)]]
