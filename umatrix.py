@@ -1,14 +1,11 @@
-__version__ = "1.1.1"
-
-from math import floor
+__version__ = "1.1.2"
 
 eye = lambda order: matrix(*[[int(i==j) for j in range(order)] for i in range(order)])
 fill = lambda x, order, num_cols=None: matrix(*[[x]*(num_cols if num_cols is not None else order)]*order)
 zeros = lambda order, num_cols=None: fill(0, order, num_cols)
 ones = lambda order, num_cols=None: fill(1, order, num_cols)
 
-Round = lambda v,p=0: round(v,p) if not isinstance(v,complex) else round(v.real,p)+round(v.imag,p)*1j
-rjust = lambda s,x: (x-len(s))*" "+s
+_round = lambda v,p=0: round(v,p) if not isinstance(v,complex) else round(v.real,p)+round(v.imag,p)*1j
 typecheck = lambda val: isinstance(val, int) or isinstance(val, float) or isinstance(val, complex)
 
 class matrix:
@@ -24,7 +21,7 @@ class matrix:
 		for i in range(shape[0]):
 			r += "["
 			for j in range(shape[1]):
-				r += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=shape[1]-1)
+				r += (pretty_print-len(str(rows[i][j])))*" "+str(rows[i][j]) + ",\t"*(j!=shape[1]-1)
 			r += "],\n\t" if i != shape[0]-1 else "]"
 		return r + " )"
 	def __str__(self):
@@ -36,7 +33,7 @@ class matrix:
 			if i:
 				s += " "
 			for j in range(shape[1]):
-				s += rjust(str(rows[i][j]), pretty_print) + ",\t"*(j!=shape[1]-1)
+				s += (pretty_print-len(str(rows[i][j])))*" "+str(rows[i][j]) + ",\t"*(j!=shape[1]-1)
 			s += ",\n" if i != shape[0]-1 else "]"
 		return s
 	@property
@@ -45,6 +42,13 @@ class matrix:
 	@property
 	def shape(self):
 		return len(self.rows), len(self.rows[0])
+	def reshape(self, m, n=None, inplace=False):
+		shape = len(self.rows), len(self.rows[0])
+		flat = [self.rows[i][j] for i in range(shape[0]) for j in range(shape[1])]
+		assert (m if n is None else m*n) == shape[0]*shape[1], "Shape {} is not compatible with current shape {}.".format((1,m) if n is None else (m,n), shape)
+		if not inplace:
+			return matrix(flat) if n is None else matrix(*[flat[i*n:i*n+n] for i in range(m)])
+		self.rows = [flat] if n is None else [flat[i*n:i*n+n] for i in range(m)]
 	def apply(self, func, inplace=False):
 		assert callable(func), "First argument must be a callable function with an int, float, or complex return."
 		rows = self.rows
@@ -56,23 +60,24 @@ class matrix:
 	def copy(self):
 		return matrix(*[[self.rows[i][j] for j in range(len(self.rows[0]))] for i in range(len(self.rows))])
 	def round(self, places=0, inplace=False):
-		rows = self.rows
 		if not inplace:
-			return matrix(*[[Round(rows[i][j],places) for j in range(len(rows[0]))] for i in range(len(rows))])
+			rows = self.rows
+			return matrix(*[[_round(rows[i][j],places) for j in range(len(rows[0]))] for i in range(len(rows))])
 		for i in range(len(rows)):
 			for j in range(len(rows[0])):
-				self.rows[i][j] = Round(rows[i][j],places)
+				self.rows[i][j] = _round(rows[i][j],places)
 	def __eq__(self, other):
-		assert isinstance(other, matrix), "Cannot compare matrix and {}.".format(type(other))
+		if not isinstance(other, matrix):
+			return False
 		rows = self.rows
 		shape = len(rows), len(rows[0])
-		if shape == other.shape:
-			for i in range(shape[0]):
-				for j in range(shape[1]):
-					if rows[i][j] != other.rows[i][j]:
-						return False
-			return True
-		return False
+		if shape != other.shape:
+			return False
+		for i in range(shape[0]):
+			for j in range(shape[1]):
+				if rows[i][j] != other.rows[i][j]:
+					return False
+		return True
 	def __ne__(self, other):
 		return not self.__eq__(other)
 	def __pos__(self):
@@ -105,7 +110,7 @@ class matrix:
 		assert isinstance(other, matrix) or typecheck(other), "Cannot multiply matrix and {}.".format(type(other))
 		rows = self.rows
 		if isinstance(other, matrix):
-			assert len(rows[0]) == len(other.rows), "Incompatible matrix sizes {} and {}.".format(shape, other.shape)
+			assert len(rows[0]) == len(other.rows), "Incompatible matrix sizes {} and {}.".format(self.shape, other.shape)
 			return matrix(*[[sum([k for k in map(lambda x,y: x*y, row, col)]) for col in other.cols] for row in rows])
 		return matrix(*[[rows[i][j]*other for j in range(len(rows[0]))] for i in range(len(rows))])
 	def __rmul__(self, other):
@@ -134,12 +139,11 @@ class matrix:
 				return matrix(*[[row[a01]] for row in rows[a00]])
 			elif isinstance(a01, slice):
 				return matrix(*[row[a01] for row in [rows[a00]]])
-			return matrix(*[[row[a00]] for row in [rows[a01]]])
+			return matrix(*[[row[a01]] for row in [rows[a00]]])
 		return self.rows[args[0]]
 	def __setitem__(self, *args):
 		sub = args[1]
 		if isinstance(args[0], tuple):
-			from math import floor
 			norm_slice = lambda s, rows: (s.start if s.start is not None else 0, s.stop if s.stop is not None else (len(self.rows) if rows else len(self.rows[0])), s.step if s.step is not None else 1)
 			a00, a01 = args[0]
 			a00_slice, a01_slice = [isinstance(x, slice) for x in [a00, a01]]
@@ -149,7 +153,7 @@ class matrix:
 				a01_iter = norm_slice(a01, False)
 			if a00_slice:
 				if a01_slice:
-					assert all([len(s) == floor((a01_iter[1]-a01_iter[0])/a01_iter[2]) for s in sub])
+					assert all([len(s) == (a01_iter[1]-a01_iter[0])//a01_iter[2] for s in sub])
 					assert all([typecheck(x) for y in sub for x in y])
 					for i in range(*a00_iter):
 						for j in range(*a01_iter):
