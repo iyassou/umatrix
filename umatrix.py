@@ -67,8 +67,7 @@ class matrix:
 			for j in range(len(rows[0])):
 				self.rows[i][j] = _round(rows[i][j],places)
 	def __eq__(self, other):
-		if not isinstance(other, matrix):
-			return False
+		assert isinstance(other, matrix), "Cannot compare matrix and {}.".format(type(other))
 		rows = self.rows
 		shape = len(rows), len(rows[0])
 		if shape != other.shape:
