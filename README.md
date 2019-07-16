@@ -337,7 +337,7 @@ matrix( [1,     1,      1,      1,      1],
 ### Environment
 
 For both the Pyboard v1.1 and Pyboard v1.0 lite tests, no SD card was used.
-For each flavour's test, there were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py` (as described above), and `umatrix.py`.
+There were only 3 files onboard the flash storage: `boot.py` (factory state), `main.py` (as described below), and `umatrix.py`.
 
 `main.py` consisted of the following lines:
 ```
