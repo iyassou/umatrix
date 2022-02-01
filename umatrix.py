@@ -1,12 +1,25 @@
-__version__ = "1.1.2"
+__version__ = "1.1.3"
 
-eye = lambda order: matrix(*[[int(i==j) for j in range(order)] for i in range(order)])
-fill = lambda x, order, num_cols=None: matrix(*[[x]*(num_cols if num_cols is not None else order)]*order)
-zeros = lambda order, num_cols=None: fill(0, order, num_cols)
-ones = lambda order, num_cols=None: fill(1, order, num_cols)
+def eye(n):
+	return matrix(*[[int(i == j) for j in range(order)] for i in range(order)])
 
-_round = lambda v,p=0: round(v,p) if not isinstance(v,complex) else round(v.real,p)+round(v.imag,p)*1j
-typecheck = lambda val: isinstance(val, int) or isinstance(val, float) or isinstance(val, complex)
+def fill(x, order, num_cols=None):
+	num_cols = num_cols or order
+	return matrix(*[[x for _ in range(num_cols)] for __ in range(order)])
+
+def zeros(order, num_cols=None):
+	return fill(0, order, num_cols)
+
+def ones(order, num_cols=None):
+	return fill(1, order, num_cols)
+
+def _round(v, places=0):
+	if not isinstance(v, complex):
+		return round(v, places)
+	return round(v.real, places) + round(v.imag, places) * 1j
+
+def typecheck(val):
+	return isinstance(val, int) or isinstance(val, float) or isinstance(val, complex)
 
 class matrix:
 	def __init__(self, *content, are_rows=True):
