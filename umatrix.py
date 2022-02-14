@@ -1,6 +1,6 @@
 __version__ = "1.1.3"
 
-def eye(n):
+def eye(order):
 	return matrix(*[[int(i == j) for j in range(order)] for i in range(order)])
 
 def fill(x, order, num_cols=None):
